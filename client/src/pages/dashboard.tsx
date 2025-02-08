@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import { Product } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
@@ -6,10 +5,11 @@ import { Plus } from "lucide-react";
 import ProductForm from "@/components/product-form";
 import PriceTable from "@/components/price-table";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { motion, useMotionValue, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import CustomCursor from "@/components/custom-cursor";
 import PriceHistoryChart from "@/components/price-history-chart";
+import { useProducts } from "@/hooks/use-products";
 
 const BackgroundGrid = () => (
   <div className="absolute inset-0 -z-10">
@@ -59,22 +59,11 @@ const Footer = () => (
 
 export default function Dashboard() {
   const [mounted, setMounted] = useState(false);
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
+  const { products, isLoading } = useProducts();
 
   useEffect(() => {
     setMounted(true);
-    const handleMouseMove = (e: MouseEvent) => {
-      mouseX.set(e.clientX);
-      mouseY.set(e.clientY);
-    };
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
-
-  const { data: products, isLoading } = useQuery<Product[]>({
-    queryKey: ["/api/products"],
-  });
 
   if (!mounted) return null;
 

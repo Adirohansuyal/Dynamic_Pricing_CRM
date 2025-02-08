@@ -1,6 +1,4 @@
-import { products, type Product, type InsertProduct, type UpdatePrice } from "@shared/schema";
-import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { type Product, type InsertProduct, type UpdatePrice } from "@shared/schema";
 
 export interface IStorage {
   getProducts(): Promise<Product[]>;
@@ -11,14 +9,21 @@ export interface IStorage {
   updateCompetitorPrice(id: number, update: UpdatePrice): Promise<Product>;
 }
 
-export class DatabaseStorage implements IStorage {
+class MemStorage implements IStorage {
+  private products: Product[] = [];
+  private nextId = 1;
+
+  constructor() {
+    // Initialize with empty products array since we're in Node.js
+    // Data persistence will happen through the frontend's localStorage
+  }
+
   async getProducts(): Promise<Product[]> {
-    return await db.select().from(products);
+    return this.products;
   }
 
   async getProduct(id: number): Promise<Product | undefined> {
-    const [product] = await db.select().from(products).where(eq(products.id, id));
-    return product;
+    return this.products.find(p => p.id === id);
   }
 
   async createProduct(insertProduct: InsertProduct): Promise<Product> {
@@ -26,56 +31,50 @@ export class DatabaseStorage implements IStorage {
       ? Number((insertProduct.competitorPrice * 0.95).toFixed(2))
       : null;
 
-    const [product] = await db
-      .insert(products)
-      .values({
-        ...insertProduct,
-        suggestedPrice: suggestedPrice?.toString()
-      })
-      .returning();
+    const product: Product = {
+      id: this.nextId++,
+      ...insertProduct,
+      currentPrice: insertProduct.currentPrice.toString(),
+      competitorPrice: insertProduct.competitorPrice?.toString() || null,
+      suggestedPrice: suggestedPrice?.toString() || null
+    };
+
+    this.products.push(product);
     return product;
   }
 
   async updateProduct(id: number, update: Partial<Product>): Promise<Product> {
-    const [product] = await db
-      .update(products)
-      .set(update)
-      .where(eq(products.id, id))
-      .returning();
+    const index = this.products.findIndex(p => p.id === id);
+    if (index === -1) throw new Error("Product not found");
 
-    if (!product) throw new Error("Product not found");
-    return product;
+    this.products[index] = { ...this.products[index], ...update };
+    return this.products[index];
   }
 
   async deleteProduct(id: number): Promise<void> {
-    await db.delete(products).where(eq(products.id, id));
+    const index = this.products.findIndex(p => p.id === id);
+    if (index !== -1) {
+      this.products.splice(index, 1);
+    }
   }
 
   async updateCompetitorPrice(id: number, update: UpdatePrice): Promise<Product> {
-    const [existingProduct] = await db
-      .select()
-      .from(products)
-      .where(eq(products.id, id));
-
-    if (!existingProduct) throw new Error("Product not found");
+    const product = await this.getProduct(id);
+    if (!product) throw new Error("Product not found");
 
     const suggestedPrice = Number((update.competitorPrice * 0.95).toFixed(2));
-    const currentPrice = existingProduct.autoPrice 
+    const currentPrice = product.autoPrice 
       ? suggestedPrice 
-      : Number(existingProduct.currentPrice);
+      : Number(product.currentPrice);
 
-    const [product] = await db
-      .update(products)
-      .set({
-        competitorPrice: update.competitorPrice.toString(),
-        suggestedPrice: suggestedPrice.toString(),
-        currentPrice: currentPrice.toString()
-      })
-      .where(eq(products.id, id))
-      .returning();
+    const updatedProduct = await this.updateProduct(id, {
+      competitorPrice: update.competitorPrice.toString(),
+      suggestedPrice: suggestedPrice.toString(),
+      currentPrice: currentPrice.toString()
+    });
 
-    return product;
+    return updatedProduct;
   }
 }
 
-export const storage = new DatabaseStorage();
+export const storage = new MemStorage();
