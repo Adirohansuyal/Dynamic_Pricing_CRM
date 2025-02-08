@@ -33,11 +33,32 @@ export default function CustomCursor() {
     window.addEventListener("mousemove", (e) => {
       mouse.x = e.x;
       mouse.y = e.y;
+
+      // Check if hovering over interactive elements
+      const target = e.target as HTMLElement;
+      const isInteractive = 
+        target.tagName.toLowerCase() === 'button' ||
+        target.tagName.toLowerCase() === 'a' ||
+        target.getAttribute('role') === 'button';
+
+      if (isInteractive) {
+        gsap.to(cursorOuter, {
+          scale: 1.5,
+          duration: 0.3,
+          ease: "power2.out"
+        });
+      } else {
+        gsap.to(cursorOuter, {
+          scale: 1,
+          duration: 0.3,
+          ease: "power2.out"
+        });
+      }
     });
 
     gsap.ticker.add(() => {
       const dt = 1.0 - Math.pow(1.0 - speed, gsap.ticker.deltaRatio());
-      
+
       pos.x += (mouse.x - pos.x) * dt;
       pos.y += (mouse.y - pos.y) * dt;
       xSet(pos.x);
@@ -47,7 +68,7 @@ export default function CustomCursor() {
     });
 
     return () => {
-      gsap.ticker.remove(gsap.ticker.getById("cursor"));
+      gsap.ticker.remove(() => {});
     };
   }, []);
 

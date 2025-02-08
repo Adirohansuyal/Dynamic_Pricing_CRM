@@ -25,24 +25,30 @@
     --ring: 224.3 76.3% 48%;
   }
 
-  * {
-    @apply border-border;
-    cursor: none !important;
-  }
-
   body {
     @apply bg-background text-foreground antialiased;
+    cursor: none;
+  }
+
+  /* Allow default cursor on interactive elements */
+  button, a, input, [role="button"] {
+    cursor: pointer !important;
   }
 
   .custom-cursor-outer {
     mix-blend-mode: difference;
+    pointer-events: none;
   }
 
   .custom-cursor {
     mix-blend-mode: difference;
+    pointer-events: none;
   }
 
-  .hover-trigger:hover ~ .custom-cursor-outer {
+  /* Scale outer cursor on interactive elements */
+  button:hover ~ .custom-cursor-outer,
+  a:hover ~ .custom-cursor-outer,
+  [role="button"]:hover ~ .custom-cursor-outer {
     transform: scale(1.5);
   }
 }
