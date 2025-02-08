@@ -9,6 +9,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import { useEffect, useState } from "react";
 import CustomCursor from "@/components/custom-cursor";
+import PriceHistoryChart from "@/components/price-history-chart";
 
 const BackgroundGrid = () => (
   <div className="absolute inset-0 -z-10">
@@ -48,6 +49,12 @@ const CircuitLines = () => (
       </g>
     </svg>
   </div>
+);
+
+const Footer = () => (
+  <footer className="mt-8 text-center text-sm text-muted-foreground pb-4">
+    All Rights Reserved © AdiAi Technologies
+  </footer>
 );
 
 export default function Dashboard() {
@@ -91,6 +98,9 @@ export default function Dashboard() {
                   <span className="bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
                     Dynamic Pricing Dashboard
                   </span>
+                  <span className="text-lg ml-2 text-muted-foreground">
+                    by AdiAi Technologies
+                  </span>
                 </CardTitle>
                 <p className="text-muted-foreground mt-2">
                   Manage your product prices and monitor competitors
@@ -117,10 +127,14 @@ export default function Dashboard() {
                   <div className="h-8 bg-primary/5 rounded animate-pulse opacity-50" />
                 </div>
               ) : (
-                <PriceTable products={products || []} />
+                <>
+                  <PriceTable products={products || []} />
+                  <PriceHistoryChart products={products || []} />
+                </>
               )}
             </CardContent>
           </Card>
+          <Footer />
         </div>
       </motion.div>
     </div>
