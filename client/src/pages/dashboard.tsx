@@ -85,10 +85,7 @@ export default function Dashboard() {
               <div>
                 <CardTitle className="text-4xl font-bold">
                   <span className="bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
-                    Dynamic Pricing Dashboard
-                  </span>
-                  <span className="text-lg ml-2 text-muted-foreground">
-                    by AdiAi Technologies
+                    Dynamic Pricing Dashboard by AdiAi Technologies
                   </span>
                 </CardTitle>
                 <p className="text-muted-foreground mt-2">
