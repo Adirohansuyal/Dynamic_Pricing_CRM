@@ -8,6 +8,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -15,9 +16,11 @@ import {
   FormField,
   FormItem,
   FormLabel,
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
 
 export default function ProductForm() {
   const { toast } = useToast();
@@ -41,6 +44,7 @@ export default function ProductForm() {
       toast({
         title: "Success",
         description: "Product created successfully",
+        variant: "default",
       });
     },
   });
@@ -50,58 +54,76 @@ export default function ProductForm() {
   };
 
   return (
-    <DialogContent>
+    <DialogContent className="sm:max-w-md">
       <DialogHeader>
         <DialogTitle>Add New Product</DialogTitle>
+        <DialogDescription>
+          Enter the product details to start tracking its pricing
+        </DialogDescription>
       </DialogHeader>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Name</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="category"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Category</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="currentPrice"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Current Price</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                    value={field.value}
-                  />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-          <Button type="submit" disabled={mutation.isPending}>
-            Create Product
-          </Button>
-        </form>
-      </Form>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Product Name</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="Enter product name" />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="category"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Category</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="Enter product category" />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="currentPrice"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Current Price</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                      value={field.value}
+                      className="font-mono"
+                      placeholder="0.00"
+                    />
+                  </FormControl>
+                  <FormDescription>Set your initial product price</FormDescription>
+                </FormItem>
+              )}
+            />
+            <div className="flex justify-end">
+              <Button
+                type="submit"
+                disabled={mutation.isPending}
+                className="min-w-[120px]"
+              >
+                {mutation.isPending ? "Creating..." : "Create Product"}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </motion.div>
     </DialogContent>
   );
 }
