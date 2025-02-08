@@ -6,55 +6,54 @@ import { Plus } from "lucide-react";
 import ProductForm from "@/components/product-form";
 import PriceTable from "@/components/price-table";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { motion, useMotionValue, useTransform } from "framer-motion";
 import { useEffect, useState } from "react";
+import CustomCursor from "@/components/custom-cursor";
 
-const BackgroundElement = ({ mouseX, mouseY, offset = 0 }) => {
-  const x = useTransform(mouseX, [0, window.innerWidth], [-15 - offset, 15 + offset]);
-  const y = useTransform(mouseY, [0, window.innerHeight], [-15 - offset, 15 + offset]);
-
-  return (
-    <motion.div
-      style={{ x, y }}
-      className="pointer-events-none absolute inset-0"
-    >
-      <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
-        <defs>
-          <linearGradient id={`grid-gradient-${offset}`} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="rgba(99, 102, 241, 0.05)" />
-            <stop offset="100%" stopColor="rgba(99, 102, 241, 0.02)" />
-          </linearGradient>
-        </defs>
-        <pattern id={`grid-pattern-${offset}`} width="4" height="4" patternUnits="userSpaceOnUse">
-          <path d="M 4 0 L 0 0 0 4" fill="none" stroke={`url(#grid-gradient-${offset})`} strokeWidth="0.5" />
+const BackgroundGrid = () => (
+  <div className="absolute inset-0 -z-10">
+    <svg width="100%" height="100%" className="absolute opacity-5">
+      <defs>
+        <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+          <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" strokeWidth="0.5" />
         </pattern>
-        <rect width="100%" height="100%" fill={`url(#grid-pattern-${offset})`} />
-      </svg>
-    </motion.div>
-  );
-};
+        <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="rgba(99, 102, 241, 0.2)" />
+          <stop offset="100%" stopColor="rgba(99, 102, 241, 0)" />
+        </linearGradient>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#grid)" />
+      <rect width="100%" height="100%" fill="url(#fade)" />
+    </svg>
+  </div>
+);
 
-const FloatingCard = ({ mouseX, mouseY, className, children }) => {
-  const x = useSpring(useTransform(mouseX, [0, window.innerWidth], [-5, 5]));
-  const y = useSpring(useTransform(mouseY, [0, window.innerHeight], [-5, 5]));
-
-  return (
-    <motion.div
-      style={{ x, y }}
-      className={className}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      {children}
-    </motion.div>
-  );
-};
+const CircuitLines = () => (
+  <div className="absolute inset-0 -z-10 overflow-hidden">
+    <svg width="100%" height="100%" className="absolute opacity-10">
+      <defs>
+        <path id="circuit" d="M 0,20 L 40,20 L 40,80 L 100,80" stroke="currentColor" fill="none" />
+      </defs>
+      <g className="animate-pulse">
+        {Array.from({ length: 10 }).map((_, i) => (
+          <use
+            key={i}
+            href="#circuit"
+            x={i * 200}
+            y={i * 100}
+            className="text-primary"
+            strokeWidth="0.5"
+          />
+        ))}
+      </g>
+    </svg>
+  </div>
+);
 
 export default function Dashboard() {
+  const [mounted, setMounted] = useState(false);
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -73,30 +72,36 @@ export default function Dashboard() {
   if (!mounted) return null;
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-background to-muted/20">
-      <BackgroundElement mouseX={mouseX} mouseY={mouseY} offset={0} />
-      <BackgroundElement mouseX={mouseX} mouseY={mouseY} offset={10} />
-      <BackgroundElement mouseX={mouseX} mouseY={mouseY} offset={20} />
+    <div className="relative min-h-screen overflow-hidden bg-[#0A0A0B]">
+      <CustomCursor />
+      <BackgroundGrid />
+      <CircuitLines />
 
-      <FloatingCard
-        mouseX={mouseX}
-        mouseY={mouseY}
-        className="p-8 relative z-10 min-h-screen"
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1 }}
+        className="relative z-10 min-h-screen p-8"
       >
         <div className="container mx-auto max-w-7xl">
-          <Card className="backdrop-blur-sm bg-background/80 border-none shadow-lg">
+          <Card className="border-none bg-black/40 backdrop-blur-xl shadow-2xl shadow-primary/10">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-7">
               <div>
-                <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                  Dynamic Pricing Dashboard
+                <CardTitle className="text-4xl font-bold">
+                  <span className="bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
+                    Dynamic Pricing Dashboard
+                  </span>
                 </CardTitle>
-                <p className="text-muted-foreground mt-1">
+                <p className="text-muted-foreground mt-2">
                   Manage your product prices and monitor competitors
                 </p>
               </div>
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button size="lg" className="shadow-md hover:shadow-lg transition-all">
+                  <Button
+                    size="lg"
+                    className="bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all duration-300"
+                  >
                     <Plus className="w-5 h-5 mr-2" />
                     Add Product
                   </Button>
@@ -107,9 +112,9 @@ export default function Dashboard() {
             <CardContent>
               {isLoading ? (
                 <div className="space-y-3">
-                  <div className="h-8 bg-muted rounded animate-pulse" />
-                  <div className="h-8 bg-muted rounded animate-pulse opacity-70" />
-                  <div className="h-8 bg-muted rounded animate-pulse opacity-50" />
+                  <div className="h-8 bg-primary/5 rounded animate-pulse" />
+                  <div className="h-8 bg-primary/5 rounded animate-pulse opacity-70" />
+                  <div className="h-8 bg-primary/5 rounded animate-pulse opacity-50" />
                 </div>
               ) : (
                 <PriceTable products={products || []} />
@@ -117,7 +122,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
-      </FloatingCard>
+      </motion.div>
     </div>
   );
 }
